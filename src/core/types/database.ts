@@ -749,7 +749,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      crear_asignacion_personal: {
+        Args: {
+          p_correo: string
+          p_nombre_completo: string
+          p_parqueadero_id: string
+          p_rol: string
+        }
+        Returns: string
+      }
       es_cuenta_con_registro: { Args: never; Returns: boolean }
+      es_propietario_de: { Args: { p_parqueadero_id: string }; Returns: boolean }
       parqueaderos_del_personal: { Args: never; Returns: string[] }
       usuario_actual_id: { Args: never; Returns: string }
     }

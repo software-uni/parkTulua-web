@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { env } from '../config/env';
-import type { Database } from '../types/database'; // generar tipos
+import type { Database } from '../types/database';
 
-export const supabase = createClient(
+export const supabase = createClient<Database>(
   env.supabaseUrl,
   env.supabaseAnonKey
 );
