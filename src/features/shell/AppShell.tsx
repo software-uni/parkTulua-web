@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router'
+import { NavLink, Outlet} from 'react-router'
 import { LoaderCircle, LogOut, Menu, X } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
-import { ADMINISTRACION, OPERACION, ROLES_ADMINISTRACION, tituloDe, type NavItem } from './navigation'
+import { ADMINISTRACION, OPERACION, ROLES_ADMINISTRACION,type NavItem } from './navigation'
 
 const ETIQUETA_ROL = {
   propietario: 'Propietario',
@@ -49,7 +49,7 @@ function Seccion({ titulo, items, onNavigate }: { titulo: string; items: NavItem
 
 export default function AppShell() {
   const { access, signOut } = useAuth()
-  const { pathname } = useLocation()
+//const { pathname } = useLocation()
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [saliendo, setSaliendo] = useState(false)
 
@@ -114,20 +114,17 @@ export default function AppShell() {
         </div>
       </aside>
 
-      <header className="flex items-start justify-between gap-4 px-4 pb-2 pt-6 sm:px-8 lg:px-10">
-        <div className="flex items-start gap-3">
+       <header className="flex items-center justify-between gap-4 px-4 pt-6 sm:px-8 lg:px-10">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setMenuAbierto(true)}
             aria-label="Abrir menú"
-            className="mt-0.5 rounded-lg border border-[#e3e0f3] bg-white p-2 text-[#1e1b3a] lg:hidden"
+            className="rounded-lg border border-[#e3e0f3] bg-white p-2 text-[#1e1b3a] lg:hidden"
           >
             <Menu className="size-5" />
           </button>
-          <div>
-            <h1 className="text-[28px] font-bold leading-tight">{tituloDe(pathname)}</h1>
-            <p className="text-sm text-[#6b7088]">{parqueaderoNombre}</p>
-          </div>
+          <p className="text-sm font-medium text-[#6b7088]">{parqueaderoNombre}</p>
         </div>
 
         <button
@@ -140,6 +137,8 @@ export default function AppShell() {
           <span className="hidden sm:inline">Cerrar sesión</span>
         </button>
       </header>
+
+      
 
       <main className="px-4 pb-10 pt-4 sm:px-8 lg:px-10">
         <Outlet />
