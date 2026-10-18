@@ -1,4 +1,5 @@
 import { supabase } from '../../../core/supabase/supabaseClient';
+import { auth } from '../../../core/firebase/firebaseClient';
 import {
   UsuariosApiError,
   esEstadoAsignacion,
@@ -39,16 +40,25 @@ function traducirError(error: PostgrestLikeError, mensajePorDefecto: string): Us
   }
 }
 
-/**
- * Parqueadero que administra la persona autenticada. Se resuelve por RLS
- * (asignacion_select_propia): primera asignación activa con rol propietario.
+ 
+
+ /**
+ * Parqueadero que administra la persona autenticada: su primera asignación activa
+ * con rol propietario. Se filtra por su UID de Firebase porque la política
+ * asignacion_select_equipo deja ver también las asignaciones del resto del equipo.
  */
 export async function obtenerContextoAdmin(): Promise<ContextoAdmin> {
+  const uid = auth.currentUser?.uid;
+  if (!uid) {
+    throw new UsuariosApiError('sin_parqueadero', 'No hay una sesión activa.');
+  }
+
   const { data, error } = await supabase
     .from('asignacion_parqueadero')
-    .select('usuario_id, parqueadero_id, parqueadero ( nombre )')
+    .select('usuario_id, parqueadero_id, parqueadero ( nombre ), usuario!inner ( firebase_uid )')
     .eq('rol', 'propietario')
     .eq('estado', 'activo')
+    .eq('usuario.firebase_uid', uid)
     .order('created_at', { ascending: true })
     .limit(1)
     .maybeSingle();
