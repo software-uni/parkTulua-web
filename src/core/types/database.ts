@@ -13,7 +13,7 @@ export type Database = {
     PostgrestVersion: "14.18"
   }
   graphql_public: {
-    Tables: {
+    Tables: { 
       [_ in never]: never
     }
     Views: {
@@ -749,6 +749,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+       actualizar_parqueadero: {
+        Args: {
+          p_direccion: string
+          p_latitud: number
+          p_longitud: number
+          p_nombre: string
+          p_parqueadero_id: string
+        }
+        Returns: undefined
+      }
+      configurar_tipo_parqueadero: {
+        Args: {
+          p_activo: boolean
+          p_capacidad: number
+          p_cupos_reservables: number
+          p_parqueadero_id: string
+          p_tarifa_hora?: number
+          p_tipo_codigo: string
+        }
+        Returns: undefined
+      }
       crear_asignacion_personal: {
         Args: {
           p_correo: string
