@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { FirebaseError } from 'firebase/app'
 import {
   GoogleAuthProvider,
@@ -11,11 +11,13 @@ import {
 } from 'firebase/auth'
 import { auth } from '../../core/firebase/firebaseClient'
 import { supabase } from '../../core/supabase/supabaseClient'
+import { env } from '../../core/config/env'
 import { AuthContext, type Access, type AuthContextValue, type AuthStatus, type Rol } from './authContext'
 
 const SIN_PARQUEADERO =
   'No estas autorizado.'
 const ERROR_AL_VERIFICAR = 'No pudimos verificar tu acceso. Revisa tu conexión e inténtalo de nuevo.'
+const CORREO_SIN_VERIFICAR = 'Debes verificar tu correo electrónico antes de ingresar. Revisa tu bandeja de entrada.'
 
 interface ParqueaderoRow {
   id: string
@@ -27,6 +29,34 @@ interface AsignacionRow {
   rol: Rol
   parqueadero_id: string
   parqueadero: ParqueaderoRow | ParqueaderoRow[] | null
+}
+
+/** Error de la edge function `registrar-usuario`, con el código HTTP para distinguir casos. */
+class RegistroError extends Error {
+  status: number
+  constructor(status: number) {
+    super(`registrar-usuario ${status}`)
+    this.status = status
+  }
+}
+
+/**
+ * Las políticas RLS de Supabase exigen que el token de Firebase traiga el claim
+ * `role: 'authenticated'`. Si todavía no lo tiene (usuario recién creado), se llama a la
+ * edge function `registrar-usuario`, que lo asigna y deja al usuario guardado en Supabase,
+ * y luego se pide un token nuevo para que el claim ya viaje en las siguientes peticiones.
+ */
+async function asegurarRol(firebaseUser: User): Promise<void> {
+  const resultado = await firebaseUser.getIdTokenResult()
+  if (resultado.claims.role === 'authenticated') return
+
+  const respuesta = await fetch(`${env.supabaseUrl}/functions/v1/registrar-usuario`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${resultado.token}` },
+  })
+  if (!respuesta.ok) throw new RegistroError(respuesta.status)
+
+  await firebaseUser.getIdToken(true) // token nuevo, ya con el claim
 }
 
 /**
@@ -86,6 +116,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setStatus(interactivo.current ? 'checking' : 'loading')
 
       try {
+        // Garantiza que el token tenga el claim `role: authenticated` antes de consultar Supabase.
+        await asegurarRol(firebaseUser)
+        if (cancelado) return
+
         const acceso = await cargarAcceso()
         if (cancelado) return
 
@@ -102,7 +136,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         if (cancelado) return
         console.error('No se pudo verificar el acceso', error)
-        setAccessError(ERROR_AL_VERIFICAR)
+        // 403 = correo sin verificar (regla de la edge function registrar-usuario)
+        const sinVerificar = error instanceof RegistroError && error.status === 403
+        setAccessError(sinVerificar ? CORREO_SIN_VERIFICAR : ERROR_AL_VERIFICAR)
         await firebaseSignOut(auth)
       } finally {
         interactivo.current = false
