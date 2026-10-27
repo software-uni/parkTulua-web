@@ -1,4 +1,4 @@
- import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { FirebaseError } from 'firebase/app'
 import {
   GoogleAuthProvider,
@@ -9,88 +9,15 @@ import {
   signOut as firebaseSignOut,
   type User,
 } from 'firebase/auth'
-import { auth } from '../../core/firebase/firebaseClient'
-import { supabase } from '../../core/supabase/supabaseClient'
-import { env } from '../../core/config/env'
-import { AuthContext, type Access, type AuthContextValue, type AuthStatus, type Rol } from './authContext'
-
-const SIN_PARQUEADERO =
-  'No estas autorizado.'
-const ERROR_AL_VERIFICAR = 'No pudimos verificar tu acceso. Revisa tu conexión e inténtalo de nuevo.'
-const CORREO_SIN_VERIFICAR = 'Debes verificar tu correo electrónico antes de ingresar. Revisa tu bandeja de entrada.'
-
-interface ParqueaderoRow {
-  id: string
-  nombre: string
-}
-
-interface AsignacionRow {
-  id: string
-  rol: Rol
-  parqueadero_id: string
-  parqueadero: ParqueaderoRow | ParqueaderoRow[] | null
-}
-
-/** Error de la edge function `registrar-usuario`, con el código HTTP para distinguir casos. */
-class RegistroError extends Error {
-  status: number
-  constructor(status: number) {
-    super(`registrar-usuario ${status}`)
-    this.status = status
-  }
-}
-
-/**
- * Las políticas RLS de Supabase exigen que el token de Firebase traiga el claim
- * `role: 'authenticated'`. Si todavía no lo tiene (usuario recién creado), se llama a la
- * edge function `registrar-usuario`, que lo asigna y deja al usuario guardado en Supabase,
- * y luego se pide un token nuevo para que el claim ya viaje en las siguientes peticiones.
- */
-async function asegurarRol(firebaseUser: User): Promise<void> {
-  const resultado = await firebaseUser.getIdTokenResult()
-  if (resultado.claims.role === 'authenticated') return
-
-  const respuesta = await fetch(`${env.supabaseUrl}/functions/v1/registrar-usuario`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${resultado.token}` },
-  })
-  if (!respuesta.ok) throw new RegistroError(respuesta.status)
-
-  await firebaseUser.getIdToken(true) // token nuevo, ya con el claim
-}
-
-/**
- * Lee las asignaciones activas de la persona autenticada.
- * La política RLS `asignacion_select_propia` ya limita las filas a las suyas
- * (usuario_id = usuario_actual_id()), así que no se filtra por usuario aquí.
- * Devuelve null si no tiene ninguna.
- */
-async function cargarAcceso(): Promise<Access | null> {
-  const { data, error } = await supabase
-    .from('asignacion_parqueadero')
-    .select('id, rol, parqueadero_id, parqueadero(id, nombre)')
-    .eq('estado', 'activo')
-    .order('created_at', { ascending: true })
-
-  if (error) throw error
-
-  const filas = (data ?? []) as unknown as AsignacionRow[]
-  const asignaciones = filas.flatMap((fila) => {
-    const parqueadero = Array.isArray(fila.parqueadero) ? fila.parqueadero[0] : fila.parqueadero
-    if (!parqueadero) return []
-    return [
-      {
-        id: fila.id,
-        rol: fila.rol,
-        parqueaderoId: fila.parqueadero_id,
-        parqueaderoNombre: parqueadero.nombre,
-      },
-    ]
-  })
-
-  const activa = asignaciones[0]
-  return activa ? { asignaciones, activa } : null
-}
+import { auth } from '../../../core/firebase/firebaseClient'
+import { asegurarRol, cargarAcceso, RegistroError } from '../api/accesoApi'
+import {
+  MENSAJE_CORREO_SIN_VERIFICAR,
+  MENSAJE_ERROR_AL_VERIFICAR,
+  MENSAJE_SIN_ACCESO,
+} from '../api/authErrors'
+import type { Access, AuthContextValue, AuthStatus } from '../types/auth.types'
+import { AuthContext } from './authContext'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading')
@@ -120,12 +47,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await asegurarRol(firebaseUser)
         if (cancelado) return
 
-        const acceso = await cargarAcceso()
+        const acceso = await cargarAcceso(firebaseUser.uid)
         if (cancelado) return
 
         if (!acceso) {
           // Tiene cuenta, pero no es personal de ningún parqueadero.
-          setAccessError(SIN_PARQUEADERO)
+          setAccessError(MENSAJE_SIN_ACCESO)
           await firebaseSignOut(auth)
           return
         }
@@ -138,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('No se pudo verificar el acceso', error)
         // 403 = correo sin verificar (regla de la edge function registrar-usuario)
         const sinVerificar = error instanceof RegistroError && error.status === 403
-        setAccessError(sinVerificar ? CORREO_SIN_VERIFICAR : ERROR_AL_VERIFICAR)
+        setAccessError(sinVerificar ? MENSAJE_CORREO_SIN_VERIFICAR : MENSAJE_ERROR_AL_VERIFICAR)
         await firebaseSignOut(auth)
       } finally {
         interactivo.current = false

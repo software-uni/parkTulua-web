@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet} from 'react-router'
 import { LoaderCircle, LogOut, Menu, X } from 'lucide-react'
-import { useAuth } from '../auth/useAuth'
+import { useAuth } from '../auth/hooks/useAuth'
 import { ADMINISTRACION, OPERACION, ROLES_ADMINISTRACION,type NavItem } from './navigation'
 
 const ETIQUETA_ROL = {

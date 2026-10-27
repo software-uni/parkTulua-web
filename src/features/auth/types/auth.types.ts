@@ -1,8 +1,11 @@
-import { createContext } from 'react'
 import type { User } from 'firebase/auth'
 
-// Roles de public.asignacion_parqueadero.rol
-export type Rol = 'propietario' | 'operador' | 'supervisor'
+export const ROLES = ['propietario', 'operador', 'supervisor'] as const
+export type Rol = (typeof ROLES)[number]
+
+export function esRol(valor: string): valor is Rol {
+  return (ROLES as readonly string[]).includes(valor)
+}
 
 export interface Asignacion {
   id: string
@@ -12,18 +15,12 @@ export interface Asignacion {
 }
 
 export interface Access {
-  /** Todas las asignaciones activas de la persona (relación N:M con parqueadero). */
+
   asignaciones: Asignacion[]
   /** La que se está usando ahora. Por ahora, la primera. */
   activa: Asignacion
 }
 
-/**
- * loading  → restaurando la sesión al abrir la app
- * checking → la persona acaba de iniciar sesión y se verifica su parqueadero
- * out      → sin sesión
- * in       → sesión válida y con parqueadero asignado
- */
 export type AuthStatus = 'loading' | 'checking' | 'out' | 'in'
 
 export interface AuthContextValue {
@@ -37,5 +34,3 @@ export interface AuthContextValue {
   resetPassword: (email: string) => Promise<void>
   signOut: () => Promise<void>
 }
-
-export const AuthContext = createContext<AuthContextValue | null>(null)
