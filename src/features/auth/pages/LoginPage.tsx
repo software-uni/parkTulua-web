@@ -122,7 +122,7 @@ export default function LoginPage() {
                     id="email"
                     type="email"
                     autoComplete="email"
-                    placeholder="nombre@parqueadero.com"
+                    placeholder="nombre@gmail.com"
                     aria-invalid={!!errors.email}
                     className="min-w-0 flex-1 bg-transparent text-[15px] text-neutro-900 outline-none placeholder:text-gris-lila"
                     {...register('email')}
@@ -152,7 +152,7 @@ export default function LoginPage() {
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="current-password"
-                      placeholder="••••••••"
+                      placeholder="Tu contraseña"
                       aria-invalid={!!errors.password}
                       aria-describedby={errors.password ? 'password-error' : undefined}
                       className="min-w-0 flex-1 bg-transparent text-[15px] text-neutro-900 outline-none placeholder:text-gris-lila"
