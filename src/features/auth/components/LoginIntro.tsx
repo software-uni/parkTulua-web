@@ -33,7 +33,7 @@ export function LoginIntro({ leaving, fadeMs, onFinish }: LoginIntroProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 bg-[#2f2475] transition-opacity ease-out ${
+      className={`fixed inset-0 z-50 bg-ilustracion-morado-oscuro transition-opacity ease-out ${
         leaving ? 'opacity-0' : 'opacity-100'
       }`}
       style={{ transitionDuration: `${fadeMs}ms` }}
@@ -55,7 +55,7 @@ export function LoginIntro({ leaving, fadeMs, onFinish }: LoginIntroProps) {
       <button
         type="button"
         onClick={onFinish}
-        className="absolute bottom-8 right-8 z-10 rounded-full px-4 py-2 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+        className="absolute bottom-8 right-8 z-10 rounded-full px-4 py-2 text-sm font-semibold text-neutro-0/70 transition hover:bg-white/10 hover:text-neutro-0"
       >
         Saltar
       </button>

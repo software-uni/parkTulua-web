@@ -95,9 +95,9 @@ export default function LoginPage() {
   const fieldBase =
     'flex items-center gap-3 rounded-[14px] border-[1.5px] p-4 transition-shadow'
   const fieldNormal =
-    'border-[#d9d5ee] bg-white focus-within:border-[#6d5bd0] focus-within:shadow-[0_0_0_4px_rgba(109,91,208,0.18)]'
+    'border-neutro-300 bg-neutro-0 focus-within:border-marca-primario focus-within:ring-4 focus-within:ring-marca-primario/20'
   const fieldError =
-    'border-[#dc2626] bg-[#fffbfb] shadow-[0_0_0_4px_rgba(220,38,38,0.1)]'
+    'border-estado-lleno bg-estado-lleno-bg ring-4 ring-estado-lleno/10'
 
   const introVisible = phase !== 'login'
 
@@ -108,27 +108,27 @@ export default function LoginPage() {
       )}
 
       <div
-        className={`grid min-h-screen bg-white font-['Inter',sans-serif] transition-opacity ease-out lg:grid-cols-2 ${
+        className={`grid min-h-screen bg-neutro-0 font-['Inter',sans-serif] transition-opacity ease-out lg:grid-cols-2 ${
           phase === 'intro' ? 'invisible opacity-0' : 'opacity-100'
         }`}
         style={{ transitionDuration: `${FADE_MS}ms` }}
       >
         {/* Panel izquierdo (escena estática: la animación solo se ve en el intro) */}
-        <aside className="relative hidden overflow-hidden bg-gradient-to-b from-[#5848b8] to-[#2f2475] lg:block">
+        <aside className="relative hidden overflow-hidden bg-gradient-to-b from-marca-oscuro to-ilustracion-morado-oscuro lg:block">
           <div className="absolute -left-[129px] -top-[166px] size-[480px] rounded-full bg-white/[0.07]" />
-          <div className="absolute -bottom-[118px] left-[461px] size-[443px] rounded-full bg-[#2f4a8f]/60" />
+          <div className="absolute -bottom-[118px] left-[461px] size-[443px] rounded-full bg-admin-oscuro-3/60" />
 
           <div className="absolute left-14 top-14 flex items-center gap-[13.5px]">
-            <div className="flex size-[46px] items-center justify-center rounded-[13.5px] bg-white text-[24px] font-extrabold text-[#6d5bd0]">
+            <div className="flex size-[46px] items-center justify-center rounded-[13.5px] bg-neutro-0 text-[24px] font-extrabold text-marca-primario">
               P
             </div>
-            <span className="text-[24px] font-bold tracking-[-0.01em] text-white">Park Tuluá</span>
+            <span className="text-[24px] font-bold tracking-[-0.01em] text-neutro-0">Park Tuluá</span>
           </div>
 
-          <h2 className="absolute left-14 top-[150px] max-w-[630px] text-[36px] font-bold leading-tight text-white">
+          <h2 className="absolute left-14 top-[150px] max-w-[630px] text-[36px] font-bold leading-tight text-neutro-0">
             Todo tu parqueadero, de un vistazo.
           </h2>
-          <p className="absolute left-14 top-[206px] mt-8 text-base font-medium text-[#d9d5ee]">
+          <p className="absolute left-14 top-[206px] mt-8 text-base font-medium text-neutro-300">
             Ocupación, reservas y retiros en un solo lugar.
           </p>
 
@@ -140,17 +140,17 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex w-full max-w-[420px] flex-col gap-6">
             {/* En móvil el panel izquierdo no se muestra, así que la marca va aquí */}
             <div className="flex items-center gap-3 lg:hidden">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-[#6d5bd0] text-xl font-extrabold text-white">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-marca-primario text-xl font-extrabold text-neutro-0">
                 P
               </div>
-              <span className="text-xl font-bold tracking-[-0.01em] text-[#1e1b3a]">Park Tuluá</span>
+              <span className="text-xl font-bold tracking-[-0.01em] text-neutro-900">Park Tuluá</span>
             </div>
             <header className="flex flex-col items-start gap-2.5">
-              <span className="rounded-full bg-[#eeebfb] px-3 py-[5px] text-xs font-semibold text-[#5848b8]">
+              <span className="rounded-full bg-marca-claro px-3 py-[5px] text-xs font-semibold text-marca-oscuro">
                 Panel de administración
               </span>
-              <h1 className="text-[32px] font-bold text-[#1e1b3a]">Bienvenido a Park Tuluá</h1>
-              <p className="text-base text-[#6b7088]">Ingresa para administrar tu parqueadero.</p>
+              <h1 className="text-[32px] font-bold text-neutro-900">Bienvenido a Park Tuluá</h1>
+              <p className="text-base text-neutro-600">Ingresa para administrar tu parqueadero.</p>
             </header>
 
             <div className="flex flex-col gap-[18px]">
@@ -158,25 +158,25 @@ export default function LoginPage() {
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="email"
-                  className={`text-sm font-semibold ${errors.email ? 'text-[#dc2626]' : 'text-[#1e1b3a]'}`}
+                  className={`text-sm font-semibold ${errors.email ? 'text-estado-lleno' : 'text-neutro-900'}`}
                 >
                   Correo electrónico
                 </label>
                 <div className={`${fieldBase} ${errors.email ? fieldError : fieldNormal}`}>
-                  <Mail className={`size-5 shrink-0 ${errors.email ? 'text-[#dc2626]' : 'text-[#6b7088]'}`} />
+                  <Mail className={`size-5 shrink-0 ${errors.email ? 'text-estado-lleno' : 'text-neutro-600'}`} />
                   <input
                     id="email"
                     type="email"
                     autoComplete="email"
                     placeholder="nombre@parqueadero.com"
                     aria-invalid={!!errors.email}
-                    className="min-w-0 flex-1 bg-transparent text-[15px] text-[#1e1b3a] outline-none placeholder:text-[#a3a1b8]"
+                    className="min-w-0 flex-1 bg-transparent text-[15px] text-neutro-900 outline-none placeholder:text-gris-lila"
                     {...register('email')}
                   />
-                  {emailValid && <Check className="size-5 shrink-0 text-[#22a06b]" />}
+                  {emailValid && <Check className="size-5 shrink-0 text-estado-disponible" />}
                 </div>
                 {errors.email && (
-                  <p className="flex items-center gap-1.5 text-[13px] font-medium text-[#dc2626]">
+                  <p className="flex items-center gap-1.5 text-[13px] font-medium text-estado-lleno">
                     <CircleAlert className="size-5 shrink-0" />
                     {errors.email.message}
                   </p>
@@ -188,32 +188,32 @@ export default function LoginPage() {
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="password"
-                    className={`text-sm font-semibold ${errors.password ? 'text-[#dc2626]' : 'text-[#1e1b3a]'}`}
+                    className={`text-sm font-semibold ${errors.password ? 'text-estado-lleno' : 'text-neutro-900'}`}
                   >
                     Contraseña
                   </label>
                   <div className={`${fieldBase} ${errors.password ? fieldError : fieldNormal}`}>
-                    <Lock className={`size-5 shrink-0 ${errors.password ? 'text-[#dc2626]' : 'text-[#6b7088]'}`} />
+                    <Lock className={`size-5 shrink-0 ${errors.password ? 'text-estado-lleno' : 'text-neutro-600'}`} />
                     <input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="current-password"
                       placeholder="••••••••"
                       aria-invalid={!!errors.password}
-                      className="min-w-0 flex-1 bg-transparent text-[15px] text-[#1e1b3a] outline-none placeholder:text-[#a3a1b8]"
+                      className="min-w-0 flex-1 bg-transparent text-[15px] text-neutro-900 outline-none placeholder:text-gris-lila"
                       {...register('password')}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                      className="shrink-0 text-[#6b7088] hover:text-[#6d5bd0]"
+                      className="shrink-0 text-neutro-600 hover:text-marca-primario"
                     >
                       {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="flex items-center gap-1.5 text-[13px] font-medium text-[#dc2626]">
+                    <p className="flex items-center gap-1.5 text-[13px] font-medium text-estado-lleno">
                       <CircleAlert className="size-5 shrink-0" />
                       {errors.password.message}
                     </p>
@@ -224,7 +224,7 @@ export default function LoginPage() {
                     type="button"
                     onClick={onForgot}
                     disabled={submitLoading}
-                    className="text-sm font-semibold text-[#6d5bd0] hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                    className="text-sm font-semibold text-marca-primario hover:underline disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     ¿Olvidaste tu contraseña?
                   </button>
@@ -235,7 +235,7 @@ export default function LoginPage() {
             {errorMessage && (
               <p
                 role="alert"
-                className="flex items-center gap-1.5 rounded-[14px] border border-[#dc2626] bg-[#fffbfb] p-3 text-[13px] font-medium text-[#dc2626]"
+                className="flex items-center gap-1.5 rounded-[14px] border border-estado-lleno bg-estado-lleno-bg p-3 text-[13px] font-medium text-estado-lleno"
               >
                 <CircleAlert className="size-5 shrink-0" />
                 {errorMessage}
@@ -245,7 +245,7 @@ export default function LoginPage() {
             {info && (
               <p
                 role="status"
-                className="flex items-center gap-1.5 rounded-[14px] border border-[#2fa67c] bg-[#e4f5ee] p-3 text-[13px] font-medium text-[#1f7a5c]"
+                className="flex items-center gap-1.5 rounded-[14px] border border-estado-disponible bg-estado-disponible-bg p-3 text-[13px] font-medium text-estado-disponible-texto"
               >
                 <Check className="size-5 shrink-0" />
                 {info}
@@ -256,7 +256,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={submitLoading}
-                className="flex items-center justify-center gap-2.5 rounded-[14px] bg-[#6d5bd0] px-5 py-[17px] text-base font-semibold text-white shadow-[0_8px_20px_-6px_rgba(110,92,209,0.28)] transition hover:bg-[#5f4ec2] hover:shadow-[0_8px_26px_-6px_rgba(110,92,209,0.36)] active:bg-[#5444b0] disabled:cursor-not-allowed disabled:bg-[#cfc9ee] disabled:shadow-none data-[loading=true]:cursor-wait data-[loading=true]:bg-[#6d5bd0]"
+                className="flex items-center justify-center gap-2.5 rounded-[14px] bg-marca-primario px-5 py-[17px] text-base font-semibold text-neutro-0 shadow-lg shadow-marca-primario/30 transition hover:bg-marca-oscuro hover:shadow-xl hover:shadow-marca-primario/40 active:bg-marca-oscuro disabled:cursor-not-allowed disabled:bg-marca-claro disabled:shadow-none data-[loading=true]:cursor-wait data-[loading=true]:bg-marca-primario"
                 data-loading={submitLoading}
               >
                 {submitLoading ? (
@@ -270,7 +270,7 @@ export default function LoginPage() {
               </button>
             </div>
 
-            <p className="text-center text-[13px] text-[#6b7088]">
+            <p className="text-center text-[13px] text-neutro-600">
               Acceso solo para administradores de parqueaderos
             </p>
           </form>

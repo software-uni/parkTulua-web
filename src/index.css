@@ -2,31 +2,53 @@
 
 @theme {
   /* Colores de Marca */
-  --color-marca-primario: #6b5aed;
-  --color-marca-oscuro: #4c3bca;
-  --color-marca-claro: #ebe8ff;
+  --color-marca-primario: #6d5bd0;
+  --color-marca-oscuro: #5848b8;
+  --color-marca-claro: #eeebfb;
+  --color-acento: #1f9bb0;
+  --color-acento-claro: #e0f3f6;
 
   /* Colores de Estado: Disponible */
-  --color-estado-disponible: #27a376;
-  --color-estado-disponible-bg: #e6f7f1;
-  --color-estado-disponible-texto: #186448;
+  --color-estado-disponible: #2fa67c;
+  --color-estado-disponible-bg: #e4f5ee;
+  --color-estado-disponible-texto: #1f7a5c;
 
   /* Colores de Estado: Poca disponibilidad */
   --color-estado-poca: #f59e0b;
   --color-estado-poca-bg: #fef3c7;
-  --color-estado-poca-texto: #b45309;
+  --color-estado-poca-texto: #92400e;
 
   /* Colores de Estado: Lleno */
-  --color-estado-lleno: #e11d48;
-  --color-estado-lleno-bg: #ffe4e6;
-  --color-estado-lleno-texto: #9f1239;
+  --color-estado-lleno: #dc2626;
+  --color-estado-lleno-bg: #fee2e2;
+  --color-estado-lleno-texto: #991b1b;
 
   /* Colores Neutros */
-  --color-neutro-900: #111827;
-  --color-neutro-600: #4b5563;
-  --color-neutro-300: #d1d5db;
-  --color-neutro-100: #f3f4f6;
+  --color-neutro-900: #1e1b3a;
+  --color-neutro-600: #6b7088;
+  --color-neutro-300: #d9d5ee;
+  --color-neutro-100: #f1effa;
   --color-neutro-0: #ffffff;
+  --color-fondo-app: #f7f6fd;
+  --color-borde-suave: #e3e0f3;
+
+  /* Colores de ilustraciones y mapa */
+  --color-ilustracion-morado-oscuro: #2f2475;
+  --color-ilustracion-edificio: #4a3cae;
+  --color-ilustracion-puerta: #241c63;
+  --color-mapa-fondo: #ebe9f6;
+  --color-mapa-manzana: #dcd8f0;
+
+  /* Colores adicionales */
+  --color-gris-400: #9ca3af;
+  --color-gris-600: #4b5563;
+  --color-gris-700: #374151;
+  --color-admin-oscuro-1: #14122b;
+  --color-admin-oscuro-2: #1a1736;
+  --color-admin-oscuro-3: #2a2750;
+  --color-gris-lila: #a3a1b8;
+  --color-gris-lila-claro: #f0eff6;
+  --color-piel: #f2c7a5;
 
   /* Tipografía */
   --font-sans: "Inter", sans-serif;
