@@ -1,24 +1,25 @@
 import { Navigate, Outlet } from 'react-router'
-import { useAuth } from '../hooks/useAuth'
-import type { Rol } from '../types/auth.types'
-import { Splash } from './Splash'
+import { LoaderCircle } from 'lucide-react'
+import type { Rol } from './authContext'
+import { useAuth } from './useAuth'
+
+function Splash() {
+  return (
+    <div
+      className="flex min-h-screen items-center justify-center bg-[#f7f6fd]"
+      role="status"
+      aria-label="Cargando"
+    >
+      <LoaderCircle className="size-8 animate-spin text-[#6d5bd0]" />
+    </div>
+  )
+}
 
 /** Solo entra personal con sesión y parqueadero asignado. El resto va al login. */
 export function RequireStaff() {
-  const { status, access } = useAuth()
+  const { status } = useAuth()
   if (status === 'loading') return <Splash />
   if (status !== 'in') return <Navigate to="/login" replace />
-  // Sesión válida pero sin parqueadero: solo puede ser administrador de plataforma.
-  if (!access) return <Navigate to="/plataforma" replace />
-  return <Outlet />
-}
-
-/** Solo entra el administrador de plataforma. */
-export function RequirePlatformAdmin() {
-  const { status, esAdminPlataforma } = useAuth()
-  if (status === 'loading') return <Splash />
-  if (status !== 'in') return <Navigate to="/login" replace />
-  if (!esAdminPlataforma) return <Navigate to="/" replace />
   return <Outlet />
 }
 

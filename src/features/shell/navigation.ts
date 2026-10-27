@@ -11,7 +11,7 @@ import {
   User,
   type LucideIcon,
 } from 'lucide-react'
-import type { Rol } from '../auth/types/auth.types'
+import type { Rol } from '../auth/authContext'
 
 export interface NavItem {
   to: string
