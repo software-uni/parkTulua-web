@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { FirebaseError } from 'firebase/app'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -20,6 +21,7 @@ import type { Access, AuthContextValue, AuthStatus } from '../types/auth.types'
 import { AuthContext } from './authContext'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient()
   const [status, setStatus] = useState<AuthStatus>('loading')
   const [user, setUser] = useState<User | null>(null)
   const [access, setAccess] = useState<Access | null>(null)
@@ -122,8 +124,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signOut = useCallback(async () => {
-    await firebaseSignOut(auth)
-  }, [])
+    try {
+      await firebaseSignOut(auth)
+    } finally {
+      queryClient.clear()
+    }
+  }, [queryClient])
 
   const value = useMemo<AuthContextValue>(
     () => ({ status, user, access, esAdminPlataforma, accessError, signInWithEmail, signInWithGoogle, resetPassword, signOut }),

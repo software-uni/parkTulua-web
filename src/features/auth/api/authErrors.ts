@@ -12,13 +12,13 @@ export function mensajeDeErrorFirebase(error: unknown): string {
   if (error instanceof FirebaseError) {
     switch (error.code) {
       case 'auth/invalid-credential':
-        return 'El correo o la contraseña son incorrectos.'
+        return 'El correo o la contraseña no coinciden. Verifica tus datos e inténtalo de nuevo.'
       case 'auth/too-many-requests':
         return 'Demasiados intentos fallidos. Intenta de nuevo más tarde.'
       case 'auth/user-not-found':
-        return 'No existe un usuario con este correo.'
+        return 'El correo o la contraseña no coinciden. Verifica tus datos e inténtalo de nuevo.'
       case 'auth/wrong-password':
-        return 'Contraseña incorrecta.'
+        return 'La contraseña es incorrecta. Revísala e inténtalo de nuevo.'
       default:
         return 'Ocurrió un error al iniciar sesión. Inténtalo de nuevo.'
     }

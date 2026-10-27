@@ -1,47 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CircleAlert, Check, Eye, EyeOff, LoaderCircle, Lock, Mail } from 'lucide-react'
 import { mensajeDeErrorFirebase } from '../api/authErrors'
-import { LoginIntro } from '../components/LoginIntro'
 import { ParkingScene } from '../components/ParkingScene'
 import { useAuth } from '../hooks/useAuth'
 import { loginSchema, type LoginFormValues } from '../types/login.schema'
 
-type Phase = 'intro' | 'leaving' | 'login'
-
-const INTRO_SEEN_KEY = 'parktulua:intro-seen'
-const FADE_MS = 600
-
-// El intro se muestra una vez por sesión y se omite si el usuario prefiere menos movimiento.
-function shouldPlayIntro() {
-  try {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
-    return sessionStorage.getItem(INTRO_SEEN_KEY) !== '1'
-  } catch {
-    return true
-  }
-}
-
 export default function LoginPage() {
-  const [phase, setPhase] = useState<Phase>(() => (shouldPlayIntro() ? 'intro' : 'login'))
-  const phaseRef = useRef(phase)
-
-  useEffect(() => {
-    phaseRef.current = phase
-  }, [phase])
-
-  const finishIntro = useCallback(() => {
-    if (phaseRef.current !== 'intro') return
-    try {
-      sessionStorage.setItem(INTRO_SEEN_KEY, '1')
-    } catch {
-      /* sin storage: el intro simplemente se repetirá */
-    }
-    setPhase('leaving')
-    window.setTimeout(() => setPhase('login'), FADE_MS)
-  }, [])
-
   const [showPassword, setShowPassword] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
@@ -99,20 +65,8 @@ export default function LoginPage() {
   const fieldError =
     'border-estado-lleno bg-estado-lleno-bg ring-4 ring-estado-lleno/10'
 
-  const introVisible = phase !== 'login'
-
   return (
-    <>
-      {introVisible && (
-        <LoginIntro leaving={phase === 'leaving'} fadeMs={FADE_MS} onFinish={finishIntro} />
-      )}
-
-      <div
-        className={`grid min-h-screen bg-neutro-0 font-['Inter',sans-serif] transition-opacity ease-out lg:grid-cols-2 ${
-          phase === 'intro' ? 'invisible opacity-0' : 'opacity-100'
-        }`}
-        style={{ transitionDuration: `${FADE_MS}ms` }}
-      >
+      <div className="grid min-h-screen bg-neutro-0 font-['Inter',sans-serif] lg:grid-cols-2">
         {/* Panel izquierdo (escena estática: la animación solo se ve en el intro) */}
         <aside className="relative hidden overflow-hidden bg-gradient-to-b from-marca-oscuro to-ilustracion-morado-oscuro lg:block">
           <div className="absolute -left-[129px] -top-[166px] size-[480px] rounded-full bg-white/[0.07]" />
@@ -176,7 +130,7 @@ export default function LoginPage() {
                   {emailValid && <Check className="size-5 shrink-0 text-estado-disponible" />}
                 </div>
                 {errors.email && (
-                  <p className="flex items-center gap-1.5 text-[13px] font-medium text-estado-lleno">
+                  <p id="password-error" className="flex items-center gap-1.5 text-[13px] font-medium text-estado-lleno">
                     <CircleAlert className="size-5 shrink-0" />
                     {errors.email.message}
                   </p>
@@ -200,6 +154,7 @@ export default function LoginPage() {
                       autoComplete="current-password"
                       placeholder="••••••••"
                       aria-invalid={!!errors.password}
+                      aria-describedby={errors.password ? 'password-error' : undefined}
                       className="min-w-0 flex-1 bg-transparent text-[15px] text-neutro-900 outline-none placeholder:text-gris-lila"
                       {...register('password')}
                     />
@@ -235,7 +190,7 @@ export default function LoginPage() {
             {errorMessage && (
               <p
                 role="alert"
-                className="flex items-center gap-1.5 rounded-[14px] border border-estado-lleno bg-estado-lleno-bg p-3 text-[13px] font-medium text-estado-lleno"
+                className="animate-login-error flex items-center gap-1.5 rounded-[14px] border border-estado-lleno bg-estado-lleno-bg p-3 text-[13px] font-medium text-estado-lleno"
               >
                 <CircleAlert className="size-5 shrink-0" />
                 {errorMessage}
@@ -276,6 +231,5 @@ export default function LoginPage() {
           </form>
         </main>
       </div>
-    </>
   )
 }

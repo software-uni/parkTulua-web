@@ -6,7 +6,7 @@ type DotLottieInstance = Parameters<
 >[0]
 
 // Red de seguridad: si la animación nunca avisa que terminó, se entra al login igual.
-const INTRO_MAX_MS = 15000
+const INTRO_MAX_MS = 8000
 
 interface LoginIntroProps {
   /** true mientras se desvanece, antes de mostrar el formulario. */
@@ -46,6 +46,7 @@ export function LoginIntro({ leaving, fadeMs, onFinish }: LoginIntroProps) {
           src="/animations/intro-parqueadero.json"
           autoplay
           loop={false}
+          speed={1.5}
           layout={{ fit: 'contain', align: [0.5, 0.5] }}
           dotLottieRefCallback={bindIntro}
           className="size-full"

@@ -25,7 +25,7 @@ export type AuthStatus = 'loading' | 'checking' | 'out' | 'in'
 
 export interface AuthContextValue {
   status: AuthStatus
-  user: User | null
+  user: User | null 
   access: Access | null
   esAdminPlataforma: boolean
   /** Motivo por el que se cerró la sesión tras iniciar (sin parqueadero, error al verificar). */
