@@ -10,7 +10,7 @@ import {
   type User,
 } from 'firebase/auth'
 import { auth } from '../../../core/firebase/firebaseClient'
-import { asegurarRol, cargarAcceso, RegistroError } from '../api/accesoApi'
+import { asegurarRol, cargarAcceso, esAdministradorPlataforma, RegistroError } from '../api/accesoApi'
 import {
   MENSAJE_CORREO_SIN_VERIFICAR,
   MENSAJE_ERROR_AL_VERIFICAR,
@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [access, setAccess] = useState<Access | null>(null)
   const [accessError, setAccessError] = useState<string | null>(null)
+  const [esAdminPlataforma, setEsAdminPlataforma] = useState(false)
 
   // true mientras la persona inicia sesión desde el formulario. Así el login
   // sigue mostrando "Ingresando…" y no se confunde con restaurar una sesión.
@@ -36,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!firebaseUser) {
         setUser(null)
         setAccess(null)
+        setEsAdminPlataforma(false)
         setStatus('out')
         return
       }
@@ -47,18 +49,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await asegurarRol(firebaseUser)
         if (cancelado) return
 
-        const acceso = await cargarAcceso(firebaseUser.uid)
+        const [acceso, esAdmin] = await Promise.all([
+          cargarAcceso(firebaseUser.uid),
+          esAdministradorPlataforma(),
+        ])
         if (cancelado) return
 
-        if (!acceso) {
-          // Tiene cuenta, pero no es personal de ningún parqueadero.
+        if (!acceso && !esAdmin) {
+          // Tiene cuenta, pero no es personal de ningún parqueadero ni administrador de plataforma.
           setAccessError(MENSAJE_SIN_ACCESO)
-          await firebaseSignOut(auth)
+          setUser(firebaseUser)
+          setAccess(null)
+          setEsAdminPlataforma(false)
+          setStatus('out')
           return
         }
 
         setUser(firebaseUser)
         setAccess(acceso)
+        setEsAdminPlataforma(esAdmin)
         setStatus('in')
       } catch (error) {
         if (cancelado) return
@@ -117,8 +126,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ status, user, access, accessError, signInWithEmail, signInWithGoogle, resetPassword, signOut }),
-    [status, user, access, accessError, signInWithEmail, signInWithGoogle, resetPassword, signOut],
+    () => ({ status, user, access, esAdminPlataforma, accessError, signInWithEmail, signInWithGoogle, resetPassword, signOut }),
+    [status, user, access, esAdminPlataforma, accessError, signInWithEmail, signInWithGoogle, resetPassword, signOut],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

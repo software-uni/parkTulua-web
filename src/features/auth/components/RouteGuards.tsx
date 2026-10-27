@@ -5,9 +5,20 @@ import { Splash } from './Splash'
 
 /** Solo entra personal con sesión y parqueadero asignado. El resto va al login. */
 export function RequireStaff() {
-  const { status } = useAuth()
+  const { status, access } = useAuth()
   if (status === 'loading') return <Splash />
   if (status !== 'in') return <Navigate to="/login" replace />
+  // Sesión válida pero sin parqueadero: solo puede ser administrador de plataforma.
+  if (!access) return <Navigate to="/plataforma" replace />
+  return <Outlet />
+}
+
+/** Solo entra el administrador de plataforma. */
+export function RequirePlatformAdmin() {
+  const { status, esAdminPlataforma } = useAuth()
+  if (status === 'loading') return <Splash />
+  if (status !== 'in') return <Navigate to="/login" replace />
+  if (!esAdminPlataforma) return <Navigate to="/" replace />
   return <Outlet />
 }
 

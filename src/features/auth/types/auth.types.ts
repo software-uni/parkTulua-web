@@ -27,6 +27,7 @@ export interface AuthContextValue {
   status: AuthStatus
   user: User | null
   access: Access | null
+  esAdminPlataforma: boolean
   /** Motivo por el que se cerró la sesión tras iniciar (sin parqueadero, error al verificar). */
   accessError: string | null
   signInWithEmail: (email: string, password: string) => Promise<void>

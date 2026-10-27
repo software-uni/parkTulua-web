@@ -40,6 +40,7 @@ export async function asegurarRol(firebaseUser: User): Promise<void> {
 }
 
 
+
 export async function cargarAcceso(firebaseUid: string): Promise<Access | null> {
   const { data, error } = await supabase
     .from('asignacion_parqueadero')
@@ -68,4 +69,9 @@ export async function cargarAcceso(firebaseUid: string): Promise<Access | null> 
 
   const activa = asignaciones[0]
   return activa ? { asignaciones, activa } : null
+}
+export async function esAdministradorPlataforma(): Promise<boolean> {
+  const { data, error } = await supabase.rpc('es_administrador_plataforma')
+  if (error) throw error
+  return data === true
 }
