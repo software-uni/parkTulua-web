@@ -783,6 +783,7 @@ export type Database = {
       es_propietario_de: { Args: { p_parqueadero_id: string }; Returns: boolean }
       parqueaderos_del_personal: { Args: never; Returns: string[] }
       usuario_actual_id: { Args: never; Returns: string }
+      es_administrador_plataforma: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

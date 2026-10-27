@@ -1,4 +1,5 @@
-import { supabase } from '../../../core/supabase/supabaseClient';
+ import { supabase } from '../../../core/supabase/supabaseClient';
+import { auth } from '../../../core/firebase/firebaseClient';
 import {
   UsuariosApiError,
   esEstadoAsignacion,
@@ -8,6 +9,7 @@ import {
   type NuevoUsuarioInput,
   type NuevoUsuarioResultado,
 } from '../types/usuario.types';
+import { MiembroError, crearMiembroEquipo } from './crearMiembroEquipo';
 
 interface PostgrestLikeError {
   code?: string;
@@ -39,16 +41,25 @@ function traducirError(error: PostgrestLikeError, mensajePorDefecto: string): Us
   }
 }
 
-/**
- * Parqueadero que administra la persona autenticada. Se resuelve por RLS
- * (asignacion_select_propia): primera asignación activa con rol propietario.
+
+
+ /**
+ * Parqueadero que administra la persona autenticada: su primera asignación activa
+ * con rol propietario. Se filtra por su UID de Firebase porque la política
+ * asignacion_select_equipo deja ver también las asignaciones del resto del equipo.
  */
 export async function obtenerContextoAdmin(): Promise<ContextoAdmin> {
+  const uid = auth.currentUser?.uid;
+  if (!uid) {
+    throw new UsuariosApiError('sin_parqueadero', 'No hay una sesión activa.');
+  }
+
   const { data, error } = await supabase
     .from('asignacion_parqueadero')
-    .select('usuario_id, parqueadero_id, parqueadero ( nombre )')
+    .select('usuario_id, parqueadero_id, parqueadero ( nombre ), usuario!inner ( firebase_uid )')
     .eq('rol', 'propietario')
     .eq('estado', 'activo')
+    .eq('usuario.firebase_uid', uid)
     .order('created_at', { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -104,6 +115,7 @@ export async function listarAsignaciones(parqueaderoId: string): Promise<Asignac
 /**
  * Pide al backend que envíe la invitación por correo para crear la contraseña.
  * Requiere la Edge Function `invitar-personal` (pendiente: proveedor de correo).
+ * Ya no la usa `crearUsuario`; se conserva por si otra pantalla la necesita.
  */
 export async function enviarInvitacion(asignacionId: string): Promise<void> {
   const { error } = await supabase.functions.invoke('invitar-personal', {
@@ -117,27 +129,42 @@ export async function enviarInvitacion(asignacionId: string): Promise<void> {
 }
 
 /**
- * Crea la asignación (usuario + ASIGNACION_PARQUEADERO) en una sola operación atómica y luego envía la invitación.
- * Si la invitación falla, la asignación queda creada y se reporta `invitacionEnviada: false`.
+ * Agrega a la persona al parqueadero con la edge function `crear-miembro-equipo`: crea su cuenta
+ * de Firebase (con el rol para Supabase), su usuario y su asignación, y le envía el correo para que
+ * cree su contraseña. `invitacionEnviada` es false solo si la cuenta es nueva y el correo no salió.
  */
 export async function crearUsuario(input: NuevoUsuarioInput): Promise<NuevoUsuarioResultado> {
-  const { data: asignacionId, error } = await supabase.rpc('crear_asignacion_personal', {
-    p_parqueadero_id: input.parqueaderoId,
-    p_nombre_completo: input.nombreCompleto.trim(),
-    p_correo: input.correo.trim().toLowerCase(),
-    p_rol: input.rol,
-  });
-
-  if (error) throw traducirError(error, 'No se pudo crear el usuario.');
-  if (!asignacionId) {
-    throw new UsuariosApiError('desconocido', 'No se pudo crear el usuario.');
-  }
-
   try {
-    await enviarInvitacion(asignacionId);
-    return { asignacionId, invitacionEnviada: true };
-  } catch (errorInvitacion) {
-    console.error('[usuarios] La invitación no se pudo enviar', errorInvitacion);
-    return { asignacionId, invitacionEnviada: false };
+    const resultado = await crearMiembroEquipo({
+      correo: input.correo.trim().toLowerCase(),
+      nombre: input.nombreCompleto.trim(),
+      parqueaderoId: input.parqueaderoId,
+      rol: input.rol,
+    });
+    // Si la cuenta ya existía no hay contraseña que crear, así que no hace falta invitación.
+    return {
+      asignacionId: resultado.asignacionId,
+      invitacionEnviada: resultado.correoEnviado || !resultado.creada,
+    };
+  } catch (error) {
+    if (error instanceof MiembroError) {
+      switch (error.status) {
+        case 403:
+          throw new UsuariosApiError(
+            'sin_permiso',
+            'Solo el propietario puede gestionar los usuarios del parqueadero.',
+            { cause: error },
+          );
+        case 409:
+          throw new UsuariosApiError('asignacion_duplicada', error.message, { cause: error });
+        case 400:
+          throw new UsuariosApiError('datos_invalidos', 'Revisa los datos ingresados.', {
+            cause: error,
+          });
+        default:
+          throw new UsuariosApiError('desconocido', error.message, { cause: error });
+      }
+    }
+    throw new UsuariosApiError('desconocido', 'No se pudo crear el usuario.', { cause: error });
   }
 }
