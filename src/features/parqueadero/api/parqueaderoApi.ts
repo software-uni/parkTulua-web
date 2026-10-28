@@ -156,3 +156,27 @@ export async function guardarPerfil(
     cause: fallidos[0].motivo,
   });
 }
+/** Devuelve el id del parqueadero del que la persona autenticada es propietaria. */
+export async function obtenerParqueaderoPropioId(): Promise<string> {
+  const { data: ids, error } = await supabase.rpc('parqueaderos_del_personal');
+  if (error) throw traducirError(error, 'No se pudieron cargar tus parqueaderos.');
+
+  const resultados = await Promise.all(
+    (ids ?? []).map(async (id) => {
+      const { data: esPropietario, error: errorRol } = await supabase.rpc('es_propietario_de', {
+        p_parqueadero_id: id,
+      });
+      if (errorRol) throw traducirError(errorRol, 'No se pudo verificar tu rol.');
+      return esPropietario ? id : null;
+    }),
+  );
+
+  const propio = resultados.find((id): id is string => id !== null);
+  if (!propio) {
+    throw new ParqueaderoApiError(
+      'sin_permiso',
+      'No tienes un parqueadero asignado como propietario.',
+    );
+  }
+  return propio;
+}
