@@ -8,6 +8,8 @@ import AppShell from './features/shell/AppShell'
 import { ADMINISTRACION, OPERACION, ROLES_ADMINISTRACION } from './features/shell/navigation'
 import PlaceholderPage from './features/shell/PlaceholderPage'
 import { usuariosRoutes } from './features/usuarios/routes'
+import { parqueaderoRoutes } from './features/parqueadero/routes'
+import { Toaster } from 'sonner'
 
 const queryClient = new QueryClient()
 
@@ -22,7 +24,8 @@ const rutasOperacion: RouteObject[] = OPERACION.filter(({ to }) => to !== '/').m
 
 const rutasAdministracion: RouteObject[] = [
   usuariosRoutes,
-  ...ADMINISTRACION.filter(({ to }) => to !== '/usuarios').map(({ to }) => ({
+  parqueaderoRoutes,
+  ...ADMINISTRACION.filter(({ to }) => to !== '/usuarios' && to !== '/perfil').map(({ to }) => ({
     path: to,
     element: <PlaceholderPage />,
   })),
@@ -73,6 +76,7 @@ export default function App() {
         <AuthProvider>
           <Rutas />
         </AuthProvider>
+        <Toaster richColors closeButton position="top-right" />
       </BrowserRouter>
     </QueryClientProvider>
   )
